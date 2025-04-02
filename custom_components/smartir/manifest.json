@@ -4,7 +4,7 @@
   "documentation": "https://bitbucket.org/javisco/71_smartir",
   "dependencies": [],
   "codeowners": ["@smartHomeHub"],
-  "requirements": ["aiofiles==0.6.0"],
+  "requirements": ["aiofiles>=0.6.0"],
   "homeassistant": "2022.5.5",
   "version": "1.17.7",
   "updater": {
