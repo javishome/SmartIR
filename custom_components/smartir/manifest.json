@@ -1,21 +1,20 @@
 {
   "domain": "smartir",
   "name": "SmartIR",
-  "documentation": "https://github.com/smartHomeHub/SmartIR",
+  "documentation": "https://bitbucket.org/javisco/71_smartir",
   "dependencies": [],
   "codeowners": ["@smartHomeHub"],
-  "requirements": ["aiofiles>=0.6.0"],
-  "homeassistant": "2024.10.0",
-  "version": "1.18.0",
+  "requirements": ["aiofiles==0.6.0"],
+  "homeassistant": "2022.5.5",
+  "version": "1.17.7",
   "updater": {
-    "version": "1.18.0",
-    "releaseNotes": "-- Adds support for light devices",
+    "version": "1.17.7",
+    "releaseNotes": "-- Removes legacy imports to the fan component",
     "files": [
       "__init__.py",
       "climate.py",
       "media_player.py",
       "fan.py",
-      "light.py",  
       "controller.py",
       "manifest.json",
       "services.yaml"

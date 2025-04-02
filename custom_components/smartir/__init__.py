@@ -19,14 +19,14 @@ from homeassistant.helpers.typing import ConfigType
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'smartir'
-VERSION = '1.18.0'
+VERSION = '1.17.6'
 MANIFEST_URL = (
     "https://raw.githubusercontent.com/"
-    "smartHomeHub/SmartIR/{}/"
+    "dinhchinh82/SmartIR/{}/"
     "custom_components/smartir/manifest.json")
 REMOTE_BASE_URL = (
     "https://raw.githubusercontent.com/"
-    "smartHomeHub/SmartIR/{}/"
+    "dinhchinh82/SmartIR/{}/"
     "custom_components/smartir/")
 COMPONENT_ABS_DIR = os.path.dirname(
     os.path.abspath(__file__))
@@ -169,3 +169,4 @@ class Helper():
         if remainder:
             packet += bytearray(16 - remainder)
         return packet
+    
