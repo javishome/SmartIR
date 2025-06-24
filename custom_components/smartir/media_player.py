@@ -1,4 +1,5 @@
 import asyncio
+import aiofiles
 import json
 import logging
 import os.path
@@ -8,9 +9,7 @@ import voluptuous as vol
 from homeassistant.components.media_player import (
     MediaPlayerEntity, PLATFORM_SCHEMA)
 from homeassistant.components.media_player.const import (
-    SUPPORT_TURN_OFF, SUPPORT_TURN_ON, SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_NEXT_TRACK, SUPPORT_VOLUME_STEP, SUPPORT_VOLUME_MUTE, 
-    SUPPORT_PLAY_MEDIA, SUPPORT_SELECT_SOURCE, MEDIA_TYPE_CHANNEL)
+    MediaPlayerEntityFeature, MediaType)
 from homeassistant.const import (
     CONF_NAME, STATE_OFF, STATE_ON, STATE_UNKNOWN)
 import homeassistant.helpers.config_validation as cv
@@ -107,12 +106,15 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
                           "place the file manually in the proper directory.")
             return
 
-    with open(device_json_path) as j:
-        try:
-            device_data = json.load(j)
-        except Exception:
-            _LOGGER.error("The device JSON file is invalid")
-            return
+    try:
+        async with aiofiles.open(device_json_path, mode='r') as j:
+            _LOGGER.debug(f"loading json file {device_json_path}")
+            content = await j.read()
+            device_data = json.loads(content)
+            _LOGGER.debug(f"{device_json_path} file loaded")
+    except Exception:
+        _LOGGER.error("The device JSON file is invalid")
+        return
 
     async_add_entities([SmartIRMediaPlayer(
         hass, config, device_data
@@ -148,26 +150,26 @@ class SmartIRMediaPlayer(MediaPlayerEntity, RestoreEntity):
 
         #Supported features
         if 'off' in self._commands and self._commands['off'] is not None:
-            self._support_flags = self._support_flags | SUPPORT_TURN_OFF
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.TURN_OFF
 
         if 'on' in self._commands and self._commands['on'] is not None:
-            self._support_flags = self._support_flags | SUPPORT_TURN_ON
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.TURN_ON
 
         if 'previousChannel' in self._commands and self._commands['previousChannel'] is not None:
-            self._support_flags = self._support_flags | SUPPORT_PREVIOUS_TRACK
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.PREVIOUS_TRACK
 
         if 'nextChannel' in self._commands and self._commands['nextChannel'] is not None:
-            self._support_flags = self._support_flags | SUPPORT_NEXT_TRACK
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.NEXT_TRACK
 
         if ('volumeDown' in self._commands and self._commands['volumeDown'] is not None) \
         or ('volumeUp' in self._commands and self._commands['volumeUp'] is not None):
-            self._support_flags = self._support_flags | SUPPORT_VOLUME_STEP
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.VOLUME_STEP
 
         if 'mute' in self._commands and self._commands['mute'] is not None:
-            self._support_flags = self._support_flags | SUPPORT_VOLUME_MUTE
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.VOLUME_MUTE
 
         if 'sources' in self._commands and self._commands['sources'] is not None:
-            self._support_flags = self._support_flags | SUPPORT_SELECT_SOURCE | SUPPORT_PLAY_MEDIA
+            self._support_flags = self._support_flags | MediaPlayerEntityFeature.SELECT_SOURCE | MediaPlayerEntityFeature.PLAY_MEDIA
 
             for source, new_name in config.get(CONF_SOURCE_NAMES, {}).items():
                 if source in self._commands['sources']:
@@ -243,7 +245,7 @@ class SmartIRMediaPlayer(MediaPlayerEntity, RestoreEntity):
     @property
     def media_content_type(self):
         """Content type of current playing media."""
-        return MEDIA_TYPE_CHANNEL
+        return MediaType.CHANNEL
 
     @property
     def source_list(self):
@@ -276,7 +278,7 @@ class SmartIRMediaPlayer(MediaPlayerEntity, RestoreEntity):
         if self._power_sensor is None:
             self._state = STATE_OFF
             self._source = None
-            await self.async_update_ha_state()
+            self.async_write_ha_state()
 
     async def async_turn_on(self):
         """Turn the media player off."""
@@ -284,45 +286,45 @@ class SmartIRMediaPlayer(MediaPlayerEntity, RestoreEntity):
 
         if self._power_sensor is None:
             self._state = STATE_ON
-            await self.async_update_ha_state()
+            self.async_write_ha_state()
 
     async def async_media_previous_track(self):
         """Send previous track command."""
         await self.send_command(self._commands['previousChannel'])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_media_next_track(self):
         """Send next track command."""
         await self.send_command(self._commands['nextChannel'])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_volume_down(self):
         """Turn volume down for media player."""
         await self.send_command(self._commands['volumeDown'])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_volume_up(self):
         """Turn volume up for media player."""
         await self.send_command(self._commands['volumeUp'])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
     
     async def async_mute_volume(self, mute):
         """Mute the volume."""
         await self.send_command(self._commands['mute'])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_select_source(self, source):
         """Select channel from source."""
         self._source = source
         await self.send_command(self._commands['sources'][source])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         """Support channel change through play_media service."""
         if self._state == STATE_OFF:
             await self.async_turn_on()
 
-        if media_type != MEDIA_TYPE_CHANNEL:
+        if media_type != MediaType.CHANNEL:
             _LOGGER.error("invalid media type")
             return
         if not media_id.isdigit():
@@ -332,7 +334,7 @@ class SmartIRMediaPlayer(MediaPlayerEntity, RestoreEntity):
         self._source = "Channel {}".format(media_id)
         for digit in media_id:
             await self.send_command(self._commands['sources']["Channel {}".format(digit)])
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
     async def send_command(self, command):
         async with self._temp_lock:

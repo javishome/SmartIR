@@ -5,16 +5,17 @@
   "dependencies": [],
   "codeowners": ["@smartHomeHub"],
   "requirements": ["aiofiles>=0.6.0"],
-  "homeassistant": "2022.5.5",
-  "version": "1.17.7",
+  "homeassistant": "2025.5.0",
+  "version": "1.18.1",
   "updater": {
-    "version": "1.17.7",
+    "version": "1.18.1",
     "releaseNotes": "-- Removes legacy imports to the fan component",
     "files": [
       "__init__.py",
       "climate.py",
       "media_player.py",
       "fan.py",
+      "light.py",
       "controller.py",
       "manifest.json",
       "services.yaml"
