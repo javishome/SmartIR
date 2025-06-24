@@ -1,0 +1,33 @@
+{
+    "manufacturer": "Easyiot",
+    "supportedModels": [
+      ""
+    ],
+    "supportedController": "Easyiot",
+    "commandsEncoding": "Hex",
+    "commands": {
+        "off": "860201000085",
+        "on": "860200000084",
+        "previousChannel": "86020800008c",
+        "nextChannel": "860207000083",
+        "volumeDown": "860206000082",
+        "volumeUp": "860205000081",
+        "mute": "86020a00008e",
+        "sources": {
+            "Return": "86020900008d",
+            "OK": "86020f00008b",
+            "Home Page": "860203000087",
+            "Menu": "860204000080",
+            "Channel 0": "86021900009d",
+            "Channel 1": "860210000094",
+            "Channel 2": "860211000095",
+            "Channel 3": "860212000096",
+            "Channel 4": "860213000097",
+            "Channel 5": "860214000090",
+            "Channel 6": "860215000091",
+            "Channel 7": "860216000092",
+            "Channel 8": "860217000093",
+            "Channel 9": "86021800009c"
+        }
+    }
+}

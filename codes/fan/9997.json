@@ -1,0 +1,23 @@
+{
+    "manufacturer": "Easyiot",
+    "supportedModels": [
+    ""
+    ],
+    "supportedController": "Easyiot",
+    "commandsEncoding": "Hex",
+    "speed": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "commands": {
+      "off": "860501000082",
+      "on": "860500000083",
+      "default": {
+        "low": "860505000086",
+        "medium": "86050900008a",
+        "high": "86050b000088"
+      },
+      "oscillate": "860503000080"
+    }
+}
