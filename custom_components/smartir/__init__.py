@@ -19,14 +19,14 @@ from homeassistant.helpers.typing import ConfigType
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'smartir'
-VERSION = '1.17.6'
+VERSION = '1.18.1'
 MANIFEST_URL = (
     "https://raw.githubusercontent.com/"
-    "dinhchinh82/SmartIR/{}/"
+    "javishome/SmartIR/{}/"
     "custom_components/smartir/manifest.json")
 REMOTE_BASE_URL = (
     "https://raw.githubusercontent.com/"
-    "dinhchinh82/SmartIR/{}/"
+    "javishome/SmartIR/{}/"
     "custom_components/smartir/")
 COMPONENT_ABS_DIR = os.path.dirname(
     os.path.abspath(__file__))
