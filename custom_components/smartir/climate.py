@@ -175,9 +175,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             _LOGGER.error("The device Json file is invalid")
             return
 
-    async_add_entities([SmartIRClimate(
-        hass, config, device_data
-    )])
+        async_add_entities([SmartIRClimate(
+            hass, config, device_data
+        )])
 
 
 class SmartIRClimate(ClimateEntity, RestoreEntity):
