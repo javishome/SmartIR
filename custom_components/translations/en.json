@@ -1,0 +1,28 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "SmartIR Configuration",
+                "description": "Configure Global SmartIR Settings",
+                "data": {
+                    "check_updates": "Check for updates at startup",
+                    "update_branch": "Update Branch (master/rc)"
+                }
+            }
+        },
+        "abort": {
+            "single_instance_allowed": "SmartIR is already configured. Only one instance is allowed."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "SmartIR Options",
+                "data": {
+                    "check_updates": "Check for updates at startup",
+                    "update_branch": "Update Branch"
+                }
+            }
+        }
+    }
+}

@@ -19,7 +19,8 @@
       "controller.py",
       "manifest.json",
       "services.yaml",
-      "broadlink2tuya.py"
+      "broadlink2tuya.py",
+      "config_flow.py"
     ]
   }
 }
