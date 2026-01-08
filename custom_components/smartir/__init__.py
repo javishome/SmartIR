@@ -15,6 +15,8 @@ from homeassistant.const import (
     ATTR_FRIENDLY_NAME, __version__ as current_ha_version)
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,11 +24,11 @@ DOMAIN = 'smartir'
 VERSION = '1.18.1'
 MANIFEST_URL = (
     "https://raw.githubusercontent.com/"
-    "javishome/SmartIR/{}/"
+    "smartHomeHub/SmartIR/{}/"
     "custom_components/smartir/manifest.json")
 REMOTE_BASE_URL = (
     "https://raw.githubusercontent.com/"
-    "javishome/SmartIR/{}/"
+    "smartHomeHub/SmartIR/{}/"
     "custom_components/smartir/")
 COMPONENT_ABS_DIR = os.path.dirname(
     os.path.abspath(__file__))
@@ -34,38 +36,71 @@ COMPONENT_ABS_DIR = os.path.dirname(
 CONF_CHECK_UPDATES = 'check_updates'
 CONF_UPDATE_BRANCH = 'update_branch'
 
+# Cập nhật: Default Check Updates = False trong YAML schema
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
-        vol.Optional(CONF_CHECK_UPDATES, default=True): cv.boolean,
+        vol.Optional(CONF_CHECK_UPDATES, default=False): cv.boolean,
         vol.Optional(CONF_UPDATE_BRANCH, default='master'): vol.In(
             ['master', 'rc'])
     })
 }, extra=vol.ALLOW_EXTRA)
 
-async def async_setup(hass, config):
-    """Set up the SmartIR component."""
-    conf = config.get(DOMAIN)
+async def async_setup(hass: HomeAssistant, config: ConfigType):
+    """Set up the SmartIR component via YAML."""
+    hass.data.setdefault(DOMAIN, {})
+    
+    if DOMAIN in config:
+        conf = config[DOMAIN]
+        # Lấy giá trị từ YAML, nếu không có thì theo default schema (False)
+        check_updates = conf.get(CONF_CHECK_UPDATES, False)
+        update_branch = conf.get(CONF_UPDATE_BRANCH, 'master')
+        await _setup_shared(hass, check_updates, update_branch)
+        
+    return True
 
-    if conf is None:
-        return True
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Set up the SmartIR component from a config entry."""
+    hass.data.setdefault(DOMAIN, {})
 
-    check_updates = conf[CONF_CHECK_UPDATES]
-    update_branch = conf[CONF_UPDATE_BRANCH]
+    config = entry.options if entry.options else entry.data
+    
+    # Cập nhật: Lấy giá trị check_updates, mặc định là False
+    check_updates = config.get(CONF_CHECK_UPDATES, False)
+    update_branch = config.get(CONF_UPDATE_BRANCH, 'master')
 
+    await _setup_shared(hass, check_updates, update_branch)
+
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+    
+    return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    return True
+
+async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    await async_unload_entry(hass, entry)
+    await async_setup_entry(hass, entry)
+
+async def _setup_shared(hass, check_updates, update_branch):
+    """Hàm setup chung."""
+    
     async def _check_updates(service):
         await _update(hass, update_branch)
 
     async def _update_component(service):
         await _update(hass, update_branch, True)
 
-    hass.services.async_register(DOMAIN, 'check_updates', _check_updates)
-    hass.services.async_register(DOMAIN, 'update_component', _update_component)
+    if not hass.services.has_service(DOMAIN, 'check_updates'):
+        hass.services.async_register(DOMAIN, 'check_updates', _check_updates)
+    
+    if not hass.services.has_service(DOMAIN, 'update_component', _update_component):
+        hass.services.async_register(DOMAIN, 'update_component', _update_component)
 
+    # Chỉ chạy update nếu check_updates là True
     if check_updates:
         await _update(hass, update_branch, False, False)
 
-    return True
-
+# (Phần code _update và class Helper giữ nguyên như cũ...)
 async def _update(hass, branch, do_update=False, notify_if_latest=True):
     try:
         async with aiohttp.ClientSession() as session:
@@ -169,4 +204,3 @@ class Helper():
         if remainder:
             packet += bytearray(16 - remainder)
         return packet
-    
