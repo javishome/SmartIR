@@ -36,7 +36,6 @@ COMPONENT_ABS_DIR = os.path.dirname(
 CONF_CHECK_UPDATES = 'check_updates'
 CONF_UPDATE_BRANCH = 'update_branch'
 
-# Cập nhật: Default Check Updates = False trong YAML schema
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
         vol.Optional(CONF_CHECK_UPDATES, default=False): cv.boolean,
@@ -51,7 +50,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType):
     
     if DOMAIN in config:
         conf = config[DOMAIN]
-        # Lấy giá trị từ YAML, nếu không có thì theo default schema (False)
         check_updates = conf.get(CONF_CHECK_UPDATES, False)
         update_branch = conf.get(CONF_UPDATE_BRANCH, 'master')
         await _setup_shared(hass, check_updates, update_branch)
@@ -64,7 +62,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     config = entry.options if entry.options else entry.data
     
-    # Cập nhật: Lấy giá trị check_updates, mặc định là False
     check_updates = config.get(CONF_CHECK_UPDATES, False)
     update_branch = config.get(CONF_UPDATE_BRANCH, 'master')
 
@@ -93,14 +90,12 @@ async def _setup_shared(hass, check_updates, update_branch):
     if not hass.services.has_service(DOMAIN, 'check_updates'):
         hass.services.async_register(DOMAIN, 'check_updates', _check_updates)
     
-    if not hass.services.has_service(DOMAIN, 'update_component', _update_component):
+    if not hass.services.has_service(DOMAIN, 'update_component'):
         hass.services.async_register(DOMAIN, 'update_component', _update_component)
 
-    # Chỉ chạy update nếu check_updates là True
     if check_updates:
         await _update(hass, update_branch, False, False)
 
-# (Phần code _update và class Helper giữ nguyên như cũ...)
 async def _update(hass, branch, do_update=False, notify_if_latest=True):
     try:
         async with aiohttp.ClientSession() as session:
